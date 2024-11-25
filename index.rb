@@ -1,5 +1,4 @@
 require_relative 'game'
-require_relative 'dictionary'
 
 game = Game.new
 loop do

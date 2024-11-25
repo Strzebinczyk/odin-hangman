@@ -1,17 +1,14 @@
-require_relative 'dictionary'
-
 class Game
   attr_reader :word, :guess
 
   def initialize(word = nil)
-    @dictionary = Dictionary.new.trim_dictionary
-    @word = word || @dictionary.sample(1)[0].split('')
+    @dictionary = @dictionary = File.read('google-10000-english-no-swears.txt').split("\n").filter do |word|
+      word.length >= 5 && word.length <= 12
+    end
+    @word = word || @dictionary.sample.split('')
     @used_letters = []
     @unused_letters = ('a'..'z').to_a
-    @guess = []
-    @word.each do |_letter|
-      @guess.push('_')
-    end
+    @guess = Array.new(@word.length) { '_' }
     @hangman_counter = 0
     @hangman_pics = ["
 
@@ -20,7 +17,7 @@ class Game
 
 
 =========",
-                     " +---+
+                     "  +---+
   |   |
       |
       |
@@ -81,6 +78,11 @@ class Game
     choice
   end
 
+  def unused_letters
+    alphabet = ('a'..'z').to_a
+    alphabet - @used_letters
+  end
+
   def valid?(choice)
     if choice.length != 1
       puts 'Please enter only one letter'
@@ -88,9 +90,9 @@ class Game
     elsif @used_letters.include?(choice)
       puts "You've already used this letter"
       false
-    elsif !@unused_letters.include?(choice)
+    elsif !unused_letters.include?(choice)
       puts 'Please use a valid letter, you can choose from ones below'
-      puts @unused_letters.join(', ')
+      puts unused_letters.join(', ')
       false
     else
       true
@@ -102,11 +104,7 @@ class Game
   end
 
   def win?
-    if !@guess.include?('_')
-      true
-    else
-      false
-    end
+    !@guess.include?('_')
   end
 
   def update_guess(choice)
@@ -119,10 +117,9 @@ class Game
   def give_feedback(choice)
     update_guess(choice)
     @hangman_counter += 1 unless @word.include?(choice)
-    puts @hangman_pics[@hangman_counter]
+    puts @hangman_pics[@hangman_counter] unless @word.include?(choice)
     puts "Your guess: #{@guess.join(' ')}"
     @used_letters.push(choice)
     puts "Used letters: #{@used_letters.join(', ')}"
-    @unused_letters.delete(choice)
   end
 end
