@@ -2,7 +2,7 @@ class Game
   attr_reader :word, :guess
 
   def initialize(word = nil)
-    @dictionary = @dictionary = File.read('google-10000-english-no-swears.txt').split("\n").filter do |word|
+    @dictionary = File.read('google-10000-english-no-swears.txt').split("\n").filter do |word|
       word.length >= 5 && word.length <= 12
     end
     @word = word || @dictionary.sample.split('')
