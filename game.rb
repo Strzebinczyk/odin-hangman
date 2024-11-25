@@ -1,5 +1,7 @@
+require 'yaml'
+
 class Game
-  attr_reader :word, :guess
+  attr_reader :word, :guess, :used_letters, :hangman_counter
 
   def initialize(word = nil)
     @dictionary = File.read('google-10000-english-no-swears.txt').split("\n").filter do |word|
@@ -68,13 +70,32 @@ class Game
   end
 
   def take_input
-    puts 'Please choose a letter'
+    puts "Please choose a letter or type 'save' if you want to save the game"
     choice = gets.chomp.downcase
     until valid?(choice)
-      puts 'Please choose a valid letter'
+      puts "Please choose a valid letter or type 'save' if you want to save the game"
       choice = gets.chomp.downcase
     end
     choice
+  end
+
+  def save_game(name)
+    Dir.mkdir('saves') unless Dir.exist?('saves')
+    filename = "saves/#{name}.yml"
+    variables = { word: @word, guess: @guess, hangman_counter: @hangman_counter, used_letters: @used_letters }
+    File.open(filename, 'w') { |f| f.write(variables.to_yaml) }
+  end
+
+  def load_game(name)
+    filename = "saves/#{name}.yml"
+    yaml = YAML.load_file(filename)
+    @word = yaml[:word]
+    @guess = yaml[:guess]
+    @hangman_counter = yaml[:hangman_counter]
+    @used_letters = yaml[:used_letters]
+    puts @hangman_pics[@hangman_counter]
+    puts "Your guess: #{@guess.join(' ')}"
+    puts "Used letters: #{@used_letters.join(', ')}"
   end
 
   def unused_letters
@@ -83,7 +104,9 @@ class Game
   end
 
   def valid?(choice)
-    if choice.length != 1
+    if choice == 'save'
+      true
+    elsif choice.length != 1
       puts 'Please enter only one letter'
       false
     elsif @used_letters.include?(choice)
@@ -118,7 +141,7 @@ class Game
     @hangman_counter += 1 unless @word.include?(choice)
     puts @hangman_pics[@hangman_counter] unless @word.include?(choice)
     puts "Your guess: #{@guess.join(' ')}"
-    @used_letters.push(choice)
+    @used_letters.push(choice) unless choice == 'save'
     puts "Used letters: #{@used_letters.join(', ')}"
   end
 end
