@@ -7,7 +7,6 @@ class Game
     end
     @word = word || @dictionary.sample.split('')
     @used_letters = []
-    @unused_letters = ('a'..'z').to_a
     @guess = Array.new(@word.length) { '_' }
     @hangman_counter = 0
     @hangman_pics = ["
